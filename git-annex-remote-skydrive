@@ -31,7 +31,7 @@ import onedrive.api_v5
 api = None
 cache = {}
 
-def login(token=None, conf={'client': {'secret': '34zcnAC5KaCo6Qc8o7oogldgJiJa20Id', 'id': '000000004C0F20A9'}}):
+def login(token=None, conf={'client': {'secret': '34zcnAC5KaCo6Qc8o7oogldgJiJa20Id', 'id': '0000000040133CDD'}}):
     common.log(repr(token) + " - " + repr(len(conf)))
     global api
     
