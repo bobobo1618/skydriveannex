@@ -34,30 +34,32 @@ cache = {}
 def login(token=None, conf={'client': {'secret': '34zcnAC5KaCo6Qc8o7oogldgJiJa20Id', 'id': '0000000040133CDD'}}):
     common.log(repr(token) + " - " + repr(len(conf)))
     global api
+
+    confPath = os.path.expanduser('~/.skyannexrc')
     
     try:
-        api=onedrive.api_v5.PersistentOneDriveAPI.from_conf('/Users/lucas/.lcrc')
+        api=onedrive.api_v5.PersistentOneDriveAPI.from_conf(confPath)
     except:
         api = onedrive.api_v5.PersistentOneDriveAPI(
             client_id=conf['client']['id'],
             client_secret=conf['client']['secret'],
-            conf_save='/Users/lucas/.lcrc'
+            conf_save=confPath
         )
     
     if token:
         api.auth_user_process_url(token)
 
-    #try:
-    ret = api.auth_get_token()
-    #except Exception as e:
-    #    common.log("EXCEPTION api.auth_get_token:" + repr(e), -1)
-    #    if repr(e).find("Insufficient authentication data provided") > -1:
-    #        url = api.auth_user_get_url()
-    #        webbrowser.open(url, True, True)
-    #        common.log("Please authenticate in browser: " + repr(url))
-    #        common.log("Please run again with OAUTH='URL after last redirect' git annex initremote...")
-    #
-    #    return False
+    try:
+        ret = api.auth_get_token()
+    except Exception as e:
+        common.log("EXCEPTION api.auth_get_token:" + repr(e), -1)
+        if repr(e).find("Insufficient authentication data provided") > -1:
+            url = api.auth_user_get_url()
+            webbrowser.open(url, True, True)
+            common.log("Please authenticate in browser: " + repr(url))
+            common.log("Please run again with OAUTH='URL after last redirect' git annex initremote...")
+
+        return False
 
     common.log('API authorization was completed successfully: ' + repr(ret))
     common.log("res: " + repr(ret), 3)
