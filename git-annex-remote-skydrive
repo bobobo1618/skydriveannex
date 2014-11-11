@@ -27,37 +27,43 @@ if dbglevel:
 sys.path.append(pwd + '/lib')
 
 import CommonFunctions as common
-import skydrive.api_v5
+import onedrive.api_v5
 api = None
 cache = {}
 
-def login(token=None, conf={'client': {'secret': 'HgkEDnsuysRqhpe3s3vyvznzrMOlTaCo', 'id': '000000004C0F20A9'}}):
+def login(token=None, conf={'client': {'secret': '34zcnAC5KaCo6Qc8o7oogldgJiJa20Id', 'id': '000000004C0F20A9'}}):
     common.log(repr(token) + " - " + repr(len(conf)))
     global api
-    api = skydrive.api_v5.PersistentSkyDriveAPI.from_json(conf)
-
+    
+    try:
+        api=onedrive.api_v5.PersistentOneDriveAPI.from_conf('/Users/lucas/.lcrc')
+    except:
+        api = onedrive.api_v5.PersistentOneDriveAPI(
+            client_id=conf['client']['id'],
+            client_secret=conf['client']['secret'],
+            conf_save='/Users/lucas/.lcrc'
+        )
+    
     if token:
         api.auth_user_process_url(token)
 
-    try:
-        ret = api.auth_get_token()
-    except Exception as e:
-        common.log("EXCEPTION api.auth_get_token:" + repr(e), -1)
-        if repr(e).find("Insufficient authentication data provided") > -1:
-            url = api.auth_user_get_url()
-            webbrowser.open(url, True, True)
-            common.log("Please authenticate in browser: " + repr(url))
-            common.log("Please run again with OAUTH='URL after last redirect' git annex initremote...")
+    #try:
+    ret = api.auth_get_token()
+    #except Exception as e:
+    #    common.log("EXCEPTION api.auth_get_token:" + repr(e), -1)
+    #    if repr(e).find("Insufficient authentication data provided") > -1:
+    #        url = api.auth_user_get_url()
+    #        webbrowser.open(url, True, True)
+    #        common.log("Please authenticate in browser: " + repr(url))
+    #        common.log("Please run again with OAUTH='URL after last redirect' git annex initremote...")
+    #
+    #    return False
 
-        return False
-        
     common.log('API authorization was completed successfully: ' + repr(ret))
-    ret, ncreds = ret
-
     common.log("res: " + repr(ret), 3)
     if len(ret) == 3:
         common.log("Done")
-        return ncreds
+        return ret
     else:
         common.log("Failure: " + repr(ret))
         return False
@@ -93,10 +99,10 @@ def findInFolder(subject, folder="me/skydrive"):
             items = api.listdir(folder)
         except Exception as e:
             common.log("Exception api.listdir: " + repr(e), -1)
-	    if repr(e).find("500 Server Error") > -1:
-	       time.sleep(3)
-	    else:
-	       break
+    	    if repr(e).find("500 Server Error") > -1:
+    	       time.sleep(3)
+    	    else:
+    	       break
 
     for item in items:
         common.log("items subject: " + repr(subject) + " - name: " + repr(item["name"]) + " - tpath: " + tpath + " - " + repr(item), 3)
@@ -248,12 +254,12 @@ def prepare(line):
     else:
         creds = login(oauth)
 
-    if len(myfolder) and isinstance(creds, dict):
+    if len(myfolder) and isinstance(creds, list):
         conf["folder"] = myfolder
         if creds:
             common.sprint('DEBUG ' + plugin)
-            creds["auth"]["access_expires"] = creds["auth"]["access_expires"].strftime("%Y-%m-%d %H:%M:%S")
-            common.sprint('SETCONFIG creds ' + json.dumps(creds) + '')
+            #creds["auth"]["access_expires"] = creds["auth"]["access_expires"].strftime("%Y-%m-%d %H:%M:%S")
+            #common.sprint('SETCONFIG creds ' + json.dumps(creds) + '')
             common.sprint('PREPARE-SUCCESS')
         else:
             common.sprint('PREPARE-FAILURE Login failure.')
@@ -293,7 +299,7 @@ def checkpresent(line):
 def remove(line):
     common.log("")
     folder = setFolder(conf["folder"], common.ask("DIRHASH " + line[1]))
-                
+
     if deleteFile(line[1], folder):
         common.sprint('REMOVE-SUCCESS ' + line[1] + '')
     else:
@@ -302,7 +308,7 @@ def remove(line):
 
 def getCost():
     common.log("", 3)
-    common.sprint("COST 150")   
+    common.sprint("COST 150")
 
 t = time.time()
 common.log("Starting", -1)

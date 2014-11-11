@@ -431,11 +431,11 @@ def log(description, level=0):
     if dbglevel > level:
         timestamp = time.strftime("%H:%M:%S", time.localtime())
         try:
-            data = " %s [%s] %s : '%s'" % (timestamp, plugin, inspect.stack()[1][3], description)
+            data = " %s [%s] %s : '%s'\n" % (timestamp, plugin, inspect.stack()[1][3], description)
         except:
-            data = " FALLBACK %s [%s] %s : '%s'" % (timestamp, plugin, inspect.stack()[1][3], repr(description))
+            data = " FALLBACK %s [%s] %s : '%s'\n" % (timestamp, plugin, inspect.stack()[1][3], repr(description))
 
-        sys.stderr.write(data + "\n")
+        sys.stderr.write(data)
 
 
 ## Git annex interface
